@@ -9,7 +9,7 @@ BREW_FORMULAE=(
 	tree htop curl wget
 )
 BREW_CASKS=(
-	ghostty font-jetbrains-mono
+	ghostty font-jetbrains-mono rectangle
 )
 
 # Set ALL_YES=1 to auto-answer "yes" to every install prompt
