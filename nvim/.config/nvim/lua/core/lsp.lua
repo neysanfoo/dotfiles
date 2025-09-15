@@ -95,7 +95,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		map("gr", "<cmd>Telescope lsp_references<CR>", "Show LSP references")
 		map("gl", vim.diagnostic.open_float, "Open Diagnostic Float")
 		map("K", function() vim.lsp.buf.hover({ border = "rounded" }) end, "Hover documentation")
-		map("ls", function() vim.lsp.buf.signature_help({ border = "rounded" }) end, "Signature help")
 		map("gs", vim.lsp.buf.signature_help, "Signature Documentation")
 		map("gd", vim.lsp.buf.definition, "Goto Declaration")
 		map("gD", vim.lsp.buf.declaration, "Goto Declaration")
