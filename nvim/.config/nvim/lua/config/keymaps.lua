@@ -20,15 +20,6 @@ keymap("n", "<C-Down>", ":resize +2<CR>", opts)
 keymap("n", "<C-Left>", ":vertical resize -2<CR>", opts)
 keymap("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 
--- Tmux integration
-local tmux_ok = pcall(require, 'tmux')
-if tmux_ok then
-	keymap("n", "<C-Up>", "<cmd>lua require('tmux').resize_top()<cr>", opts)
-	keymap("n", "<C-Down>", "<cmd>lua require('tmux').resize_bottom()<cr>", opts)
-	keymap("n", "<C-Left>", "<cmd>lua require('tmux').resize_left()<cr>", opts)
-	keymap("n", "<C-Right>", "<cmd>lua require('tmux').resize_right()<cr>", opts)
-end
-
 -- EDITING --
 
 -- Better paste
@@ -55,3 +46,17 @@ keymap("n", "<Leader>w", ":w<CR>", opts)
 -- Line Numbers
 keymap("n", "<Leader>nr", ":set relativenumber<CR>", opts)
 keymap("n", "<Leader>nn", ":set number<CR>", opts)
+
+-- COMMENTING --
+-- Keep the built-in gc operator/textobject, but remove the unused shortcuts.
+-- Also clear old custom mappings when this file is re-sourced in a live session.
+for _, lhs in ipairs({ "gcc", "gco", "gcO", "gcA", "gb", "gbc" }) do
+  pcall(vim.keymap.del, "n", lhs)
+end
+pcall(vim.keymap.del, "x", "gb")
+
+keymap("n", "<leader>/", "gc_", { remap = true, silent = true, desc = "Toggle comment" })
+keymap("x", "<leader>/", "gc", { remap = true, silent = true, desc = "Toggle comment" })
+keymap("n", "<D-/>", "gc_", { remap = true, silent = true, desc = "Toggle comment" })
+keymap("x", "<D-/>", "gc", { remap = true, silent = true, desc = "Toggle comment" })
+keymap("i", "<D-/>", "<Esc>gc_a", { remap = true, silent = true, desc = "Toggle comment" })

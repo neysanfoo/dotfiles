@@ -1,4 +1,4 @@
-theme = "GruvboxDark"
+theme = "Gruvbox Dark"
 
 font-family = "JetBrainsMono Nerd Font"
 font-size = 14
@@ -9,3 +9,7 @@ window-padding-x= 4
 window-padding-y= 4
 window-padding-balance = true
 
+
+# Send Cmd+/ to the terminal as the kitty-keyboard sequence for <D-/>
+# (macOS never forwards Cmd combos to TUIs on its own)
+keybind = super+slash=csi:47;9u

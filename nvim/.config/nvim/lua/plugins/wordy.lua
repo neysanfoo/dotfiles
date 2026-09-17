@@ -1,5 +1,3 @@
-return {
-	"neysanfoo/wordy.nvim",
-	event = "VeryLazy",
-  opts = {},
-}
+return function()
+  require("wordy").setup({})
+end

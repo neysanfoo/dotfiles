@@ -1,122 +1,98 @@
-return {
-	"saghen/blink.cmp",
-	event = { "InsertEnter", "CmdlineEnter" },
-	dependencies = {
-		{ "L3MON4D3/LuaSnip", version = "v2.*" },
-		"rafamadriz/friendly-snippets",
-	},
-	version = "1.*",
-	opts = {
-		snippets = { preset = "luasnip" },
-		keymap = {
-			preset = "default",
-			["<C-k>"] = { "select_prev", "fallback" },
-			["<C-j>"] = { "select_next", "fallback" },
-			["<C-b>"] = { "scroll_documentation_up", "fallback" },
-			["<C-f>"] = { "scroll_documentation_down", "fallback" },
-			["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
-			["<CR>"] = { "accept", "fallback" },
-			["<C-e>"] = { "show", "hide", "fallback" },
-		},
-		cmdline = {
-			keymap = {
-				["<C-k>"] = { "select_prev", "fallback" },
-				["<C-j>"] = { "select_next", "fallback" },
-				["<CR>"] = { "accept", "fallback" },
-				["<C-e>"] = { "show", "hide", "fallback" },
-			},
-			completion = {
-				list = { selection = { preselect = false, auto_insert = true } },
-			},
-			sources = { "cmdline", "path" },
-		},
-		appearance = {
-			nerd_font_variant = "mono",
-		},
-		completion = {
-			list = { selection = { preselect = false, auto_insert = true } },
-			documentation = {
-				auto_show = false,
-				auto_show_delay_ms = 250,
-				window = {
-					border = "rounded",
-					max_width = 80,
-					max_height = 20,
-					winblend = 0,
-					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
-				},
-			},
-			ghost_text = { enabled = true, show_with_menu = true },
-			menu = {
-				min_width = 24,
-				max_height = 12,
-				border = "rounded",
-				winblend = 0,
-				winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
-				scrolloff = 2,
-				draw = {
-					align_to = "label",
-					padding = { 1, 2 },
-					gap = 2,
-					treesitter = { "lsp" },
-					columns = {
-						{ "kind_icon" },
-						{ "label",      "label_description", gap = 1 },
-						{ "source_name" },
-					},
-					components = {
-						label = { width = { fill = true, max = 60 } },
-						label_description = { width = { max = 40 } },
-						source_name = { width = { max = 12 } },
-						kind_icon = {
-							highlight = function(ctx)
-								return { { group = ctx.kind_hl, priority = 20000 } }
-							end,
-						},
-					},
-				},
-			},
-		},
-		sources = {
-			default = { "lsp", "path", "snippets", "buffer" },
-			providers = {
-				lsp = { score_offset = 10, fallbacks = {} },
-				snippets = { score_offset = 2 },
-				path = { score_offset = 0 },
-				buffer = { score_offset = -2 },
-				cmdline = {
-					name = "cmdline",
-					module = "blink.cmp.sources.cmdline",
-					score_offset = 10,
-				},
-			},
-		},
-		fuzzy = { implementation = "prefer_rust" },
-	},
-	opts_extend = { "sources.default" },
-	config = function(_, opts)
-		require("blink.cmp").setup(opts)
-		-- LuaSnip setup
-		local ok, luasnip = pcall(require, "luasnip")
-		if ok then
-			require("luasnip.loaders.from_vscode").lazy_load()
-			-- Custom snippets
-			luasnip.add_snippets("go", {
-				luasnip.snippet("ie", {
-					luasnip.text_node({ "if err != nil {", "\t// handle error", "}" }),
-				}),
-			})
-			-- Snippet navigation keymaps (avoid conflict with Copilot's Ctrl-L)
-			vim.keymap.set({ "i", "s" }, "<C-n>", function()
-				if luasnip.expand_or_jumpable() then
-					luasnip.expand_or_jump()
-				end
-			end, { desc = "Expand or jump snippet" })
-			vim.keymap.set({ "i", "s" }, "<C-p>", function()
-				if luasnip.jumpable(-1) then
-					luasnip.jump(-1)
-				end
-			end, { desc = "Jump back in snippet" })
-		end
-	end,
-}
+return function()
+  require("blink.cmp").setup({
+    enabled = function()
+      return not vim.tbl_contains({ "TelescopePrompt", "spectre_panel", "trouble" }, vim.bo.filetype)
+    end,
+    snippets = { preset = "default" }, -- vim.snippet, not LuaSnip
+    fuzzy = { implementation = "prefer_rust" },
+    appearance = { nerd_font_variant = "mono" },
+    keymap = {
+      preset = "none",
+      ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
+      ["<C-e>"] = { "cancel", "hide_signature", "fallback" },
+      ["<CR>"] = { "accept", "fallback" },
+      ["<C-y>"] = { "select_and_accept", "fallback" },
+      ["<C-j>"] = { "select_next", "fallback" },
+      ["<C-k>"] = { "select_prev", "fallback" },
+      ["<Down>"] = { "select_next", "fallback" },
+      ["<Up>"] = { "select_prev", "fallback" },
+      ["<Tab>"] = { "snippet_forward", "fallback" },
+      ["<S-Tab>"] = { "snippet_backward", "fallback" },
+      ["<C-n>"] = {
+        "snippet_forward",
+        function(cmp)
+          if not require("core.completion").go_iferr_available() then return end
+          cmp.hide()
+          vim.schedule(function() require("core.completion").expand_go_iferr() end)
+          return true
+        end,
+        "select_next", "fallback_to_mappings",
+      },
+      ["<C-p>"] = { "snippet_backward", "select_prev", "fallback_to_mappings" },
+      ["<C-f>"] = { "scroll_documentation_down", "scroll_signature_down", "fallback" },
+      ["<C-b>"] = { "scroll_documentation_up", "scroll_signature_up", "fallback" },
+      ["<C-s>"] = { "show_signature", "hide_signature", "fallback" },
+    },
+    completion = {
+      list = { selection = { preselect = false, auto_insert = false } },
+      ghost_text = { enabled = false },
+      accept = { auto_brackets = { enabled = true } },
+      menu = {
+        border = "rounded",
+        min_width = 24,
+        max_height = 10,
+        auto_show_delay_ms = 60,
+        draw = {
+          padding = { 1, 1 },
+          gap = 2,
+          columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "source_name" } },
+          components = {
+            label = { width = { fill = true, max = 48 } },
+            label_description = { width = { max = 28 } },
+            source_name = { width = { max = 8 } },
+          },
+        },
+      },
+      documentation = {
+        auto_show = true,
+        auto_show_delay_ms = 180,
+        update_delay_ms = 50,
+        window = { border = "rounded", max_width = 72, max_height = 18, desired_min_height = 4 },
+        draw = function(opts)
+          -- The renderer uses Neovim's highlighter; do not run a second,
+          -- synchronous Tree-sitter pass over every documentation line.
+          opts.default_implementation({ use_treesitter_highlighting = false })
+          -- Blink draws before opening the window; render after it is visible.
+          local buf = opts.window:get_buf()
+          vim.schedule(function()
+            local win = opts.window:get_win()
+            if win and vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
+              require("core.ui").render_document(buf, win)
+            end
+          end)
+        end,
+      },
+    },
+    signature = {
+      enabled = true,
+      window = { border = "rounded", max_width = 80, max_height = 4, show_documentation = false },
+    },
+    sources = {
+      default = { "lsp", "path", "snippets", "buffer" },
+      providers = {
+        lsp = { name = "LSP", score_offset = 10 },
+        path = { name = "Path" },
+        snippets = { name = "Snippet" },
+        buffer = {
+          name = "Text",
+          min_keyword_length = 3,
+          max_items = 8,
+          score_offset = -5,
+          opts = { get_bufnrs = function() return { vim.api.nvim_get_current_buf() } end },
+        },
+      },
+    },
+    -- Native command-line completion keeps command execution and Telescope input predictable.
+    cmdline = { enabled = false },
+  })
+end

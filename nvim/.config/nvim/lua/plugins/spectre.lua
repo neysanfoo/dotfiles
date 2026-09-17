@@ -1,10 +1,4 @@
-return {
-  "nvim-pack/nvim-spectre",
-  build = false,
-  cmd = "Spectre",
-  opts = { open_cmd = "noswapfile vnew" },
-  -- stylua: ignore
-  keys = {
-    { "<leader>sr", function() require("spectre").open() end, desc = "Replace in Files (Spectre)" },
-  },
-}
+return function()
+  require("spectre").setup({ open_cmd = "noswapfile vnew" })
+  vim.keymap.set("n", "<leader>sr", function() require("spectre").open() end, { desc = "Replace in Files (Spectre)" })
+end

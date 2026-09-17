@@ -1,5 +1,6 @@
-require("core.lsp")
 require("config.options")
 require("config.keymaps")
 require("config.autocmds")
-require("core.lazy")
+require("core.completion").setup()
+require("core.lsp")
+require("core.pack").setup()

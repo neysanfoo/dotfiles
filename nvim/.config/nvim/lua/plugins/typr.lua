@@ -1,6 +1,3 @@
-return {
-    "nvzone/typr",
-    dependencies = "nvzone/volt",
-    opts = {},
-    cmd = { "Typr", "TyprStats" },
-}
+return function()
+  require("typr").setup({})
+end

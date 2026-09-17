@@ -1,7 +1,4 @@
-return {
-	"neysanfoo/party.nvim",
-	config = function()
-		require("party").setup({})
-	end,
-	vim.api.nvim_set_keymap("n", "<leader>lol", ":PartyToggle<CR>", { noremap = true, silent = true }),
-}
+return function()
+  require("party").setup({})
+  vim.keymap.set("n", "<leader>lol", "<cmd>PartyToggle<CR>", { desc = "Toggle party" })
+end

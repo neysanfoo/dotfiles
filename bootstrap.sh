@@ -4,6 +4,8 @@ set -euo pipefail
 # ===== settings =====
 REPO_DIR="${REPO_DIR:-$HOME/dotfiles}"
 STOW_PACKAGES=("tmux" "nvim" "ghostty")
+
+LEANFMT_SRC="${LEANFMT_SRC:-$HOME/generics/leanfmt}"
 BREW_FORMULAE=(
 	git stow tmux neovim ripgrep fzf
 	tree htop curl wget
@@ -107,6 +109,32 @@ install_formulae() {
 	fi
 }
 
+install_leanfmt() {
+	if [[ ! -d "$LEANFMT_SRC" ]]; then
+		warn "Skip leanfmt: source tree not found at $LEANFMT_SRC"
+		return
+	fi
+
+	# leanfmt is a Lean package, so it needs the Lean toolchain to build at all.
+	if ! command -v elan >/dev/null 2>&1; then
+		if ask_yes_no "Install elan (Lean toolchain manager), needed to build leanfmt?"; then
+			log "Installing elan…"
+			curl -fsSL https://elan.lean-lang.org/elan-init.sh | sh -s -- -y
+			export PATH="$HOME/.elan/bin:$PATH"
+		else
+			warn "Skipped elan; leanfmt will not be built"
+			return
+		fi
+	fi
+
+	if ask_yes_no "Build and install leanfmt from $LEANFMT_SRC?"; then
+		log "Building leanfmt (first build downloads the Lean toolchain and takes a while)…"
+		"$LEANFMT_SRC/scripts/install.sh"
+	else
+		warn "Skipped leanfmt"
+	fi
+}
+
 stow_package() {
 	local pkg="$1"
 	[[ -d "$REPO_DIR/$pkg" ]] || {
@@ -138,6 +166,8 @@ main() {
 	log "Bootstrap starting (repo: $REPO_DIR)…"
 	ensure_homebrew
 	install_formulae
+
+	install_leanfmt
 
 	log "Linking dotfiles with stow…"
 	for pkg in "${STOW_PACKAGES[@]}"; do
